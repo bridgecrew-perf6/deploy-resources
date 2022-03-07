@@ -6,10 +6,9 @@ echo "Deploying $GITHUB_JOB"
 
 git clone --single-branch --branch master https://github.com/nicolasdonoso/templates.git
 
-ls -alh templates/
-
 ## Check before script
 
+export AWS_DEFAULT_REGION=$AWS_REGION
 export RUN_ID=$GITHUB_RUN_ID ## Make this variable depending CI/CD provider
 if [[ -z $ECR_REPO ]]
     then echo "ECR repo name defined by repo name"
@@ -18,7 +17,6 @@ else
     echo "ECR repo name defined by env var ECR_REPO"
     export REPO_NAME=$ECR_REPO
 fi
-export AWS_DEFAULT_REGION=$AWS_REGION
 
 echo $K8S_KUBECONFIG | base64 -d > ./kube_config
 kubectl config use-context $K8S_CLUSTER
@@ -27,13 +25,13 @@ if [[ -f deploy/secrets.yml ]]
   envsubst < deploy/secrets.yml > secrets.yml
   export creds=$(awk -v ORS="\n        " 1 secrets.yml)
 fi
-if [[ $local_redis == "true" ]]
+if [[ $local_redis == 'true' ]]
   then echo "adding local redis"
   export REDIS_HOST="localhost"
   envsubst < templates/manifests/sockets/redis.yml > redis.yml
   export redis=$(awk -v ORS="\n      " 1 redis.yml)
 fi
-if [[ $k8s_probes == "true" ]]
+if [[ $k8s_probes == 'true' ]]
   then echo "adding readiness and liveness probes"
   envsubst < templates/manifests/sockets/k8s_probes.yml > k8s-probes.yml
   export probes=$(awk -v ORS="\n        " 1 k8s-probes.yml)
@@ -45,7 +43,7 @@ if [[ $volume_name ]]
   export volume=$(awk -v ORS="\n      " 1 volume.yml)
   export volume_mounts=$(awk -v ORS="\n        " 1 volume_mounts.yml)
 fi
-if [[ $SERVICE == "true" ]];
+if [[ $SERVICE == 'true' ]];
   then echo "deploying service resources"
   export SERVICE_NAME=$REPO
   if [[ $ROUTE ]]
@@ -61,9 +59,9 @@ else
   envsubst < templates/manifests/sockets/deployment.yml > deployment.yml
   envsubst < templates/manifests/sockets/service.yml > service.yml
 fi
-cat deployment.yml
-cat service.yml
-cat ingress.yml
-# kubectl apply -f deployment.yml -n $CI_JOB_STAGE
-# kubectl apply -f service.yml -n $CI_JOB_STAGE
-# kubectl apply -f ingress.yml -n $CI_JOB_STAGE
+# cat deployment.yml
+# cat service.yml
+# cat ingress.yml
+kubectl apply -f deployment.yml -n $CI_JOB_STAGE
+kubectl apply -f service.yml -n $CI_JOB_STAGE
+kubectl apply -f ingress.yml -n $CI_JOB_STAGE
