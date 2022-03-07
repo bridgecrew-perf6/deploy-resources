@@ -1,6 +1,8 @@
-#!/bin/sh -l
+#!/bin/sh
 
 echo "Deploying $GITHUB_JOB"
+
+ls -lah
 
 ## Check before script
 
