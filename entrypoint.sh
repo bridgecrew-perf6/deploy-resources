@@ -30,18 +30,18 @@ fi
 if [[ $local_redis == "true" ]]
   then echo "adding local redis"
   export REDIS_HOST="localhost"
-  envsubst < templates/manifests/sockets/redis.yml > redis.yml
+  envsubst < manifests/sockets/redis.yml > redis.yml
   export redis=$(awk -v ORS="\n      " 1 redis.yml)
 fi
 if [[ $k8s_probes == "true" ]]
   then echo "adding readiness and liveness probes"
-  envsubst < templates/manifests/sockets/k8s_probes.yml > k8s-probes.yml
+  envsubst < manifests/sockets/k8s_probes.yml > k8s-probes.yml
   export probes=$(awk -v ORS="\n        " 1 k8s-probes.yml)
 fi
 if [[ $volume_name ]]
   then echo "adding volume"
-  envsubst < templates/manifests/sockets/volume.yml > volume.yml
-  envsubst < templates/manifests/sockets/volume_mounts.yml > volume_mounts.yml
+  envsubst < manifests/sockets/volume.yml > volume.yml
+  envsubst < manifests/sockets/volume_mounts.yml > volume_mounts.yml
   export volume=$(awk -v ORS="\n      " 1 volume.yml)
   export volume_mounts=$(awk -v ORS="\n        " 1 volume_mounts.yml)
 fi
@@ -52,14 +52,14 @@ if [[ $SERVICE == "true" ]];
     then echo "adding custom path / route"
     export SERVICE_NAME=$ROUTE
   fi
-  envsubst < templates/manifest/sockets/ingress.yml > ingress.yml
-  envsubst < templates/manifest/sockets/deployment.yml > deployment.yml
-  envsubst < templates/manifest/sockets/service.yml > service.yml
+  envsubst < manifests/sockets/ingress.yml > ingress.yml
+  envsubst < manifests/sockets/deployment.yml > deployment.yml
+  envsubst < manifests/sockets/service.yml > service.yml
 else
   echo "deploying sockets ingress"
-  envsubst < templates/manifest/sockets/ingress.yml > ingress.yml
-  envsubst < templates/manifest/sockets/deployment.yml > deployment.yml
-  envsubst < templates/manifest/sockets/service.yml > service.yml
+  envsubst < manifests/sockets/ingress.yml > ingress.yml
+  envsubst < manifests/sockets/deployment.yml > deployment.yml
+  envsubst < manifests/sockets/service.yml > service.yml
 fi
 cat deployment.yml
 cat service.yml

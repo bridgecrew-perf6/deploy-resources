@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: $REPO
+  labels:
+    name: $REPO
+spec:
+  replicas: $REPLICAS
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxSurge: 25%
+       maxUnavailable: 25%
+  selector:
+    matchLabels:
+      name: $REPO
+
+  template:
+    metadata:
+      labels:
+        name: $REPO
+      annotations:
+        gitlab.com/job-id: "$CI_JOB_ID"
+        kube_namespace: $CI_JOB_STAGE
+        # config.linkerd.io/opaque-ports: "$SOCKETS_PORT"
+        # linkerd.io/inject: enabled
+    spec:
+      # serviceAccountName: linkerd-pods
+      securityContext:
+        runAsUser: 999
+      nodeSelector:
+        kops.k8s.io/instancegroup: nodes
+      $volume
+      containers:
+      - name: $REPO
+        image: AWS_ACCOUNT.dkr.ecr.AWS_REGION.amazonaws.com/$REPO:$RUN_ID
+        command: ["node", "app.js"]
+        $volume_mounts
+        resources:
+          requests:
+            memory: $mem
+            cpu: $cpu
+          limits:
+            memory: $mem
+            cpu: $cpu
+        ports:
+        - containerPort: $SOCKETS_PORT
+          name: http
+        $probes
+        env:
+        - name: HTTP_PORT
+          value: "${SOCKETS_PORT}"
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: config
+              key: environment.node
+        - name: LOGGER_FORMAT
+          valueFrom:
+            configMapKeyRef:
+              name: config
+              key: sockets.logger
+        - name: KUBE_NAMESPACE
+          value: "$CI_JOB_STAGE"
+        # Redis
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: config
+              key: redis.port
+        - name: REDIS_HOST
+          value: "${REDIS_HOST}"
+        - name: DD_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: dd-api-key
+              key: dd-api-key
+        - name: DD_AGENT_HOST
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: ENV_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: config
+              key: environment.name
+        $creds
+      $redis
