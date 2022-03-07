@@ -2,9 +2,6 @@
 
 echo "Deploying $GITHUB_JOB"
 
-cp -r manifests .
-ls -lah
-
 ## Check before script
 
 export RUN_ID=$GITHUB_RUN_ID ## Make this variable depending CI/CD provider
