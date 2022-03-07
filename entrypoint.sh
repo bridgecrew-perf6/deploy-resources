@@ -46,14 +46,14 @@ if [[ $SERVICE == "true" ]];
     then echo "adding custom path / route"
     export SERVICE_NAME=$ROUTE
   fi
-  envsubst < manifest/ingress.yml > ingress.yml
-  envsubst < manifest/deployment.yml > deployment.yml
-  envsubst < manifest/service.yml > service.yml
+  envsubst < manifest/sockets/ingress.yml > ingress.yml
+  envsubst < manifest/sockets/deployment.yml > deployment.yml
+  envsubst < manifest/sockets/service.yml > service.yml
 else
   echo "deploying sockets ingress"
-  envsubst < manifest/ingress.yml > ingress.yml
-  envsubst < manifest/deployment.yml > deployment.yml
-  envsubst < manifest/service.yml > service.yml
+  envsubst < manifest/sockets/ingress.yml > ingress.yml
+  envsubst < manifest/sockets/deployment.yml > deployment.yml
+  envsubst < manifest/sockets/service.yml > service.yml
 fi
 cat deployment.yml
 cat service.yml
