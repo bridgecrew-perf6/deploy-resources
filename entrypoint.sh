@@ -2,6 +2,7 @@
 
 echo "Deploying $GITHUB_JOB"
 
+cp -r manifests .
 ls -lah
 
 ## Check before script
