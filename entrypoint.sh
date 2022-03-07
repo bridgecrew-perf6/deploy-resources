@@ -6,6 +6,8 @@ echo "Deploying $GITHUB_JOB"
 
 git clone --single-branch --branch master https://github.com/nicolasdonoso/templates.git
 
+ls -alh templates/
+
 ## Check before script
 
 export RUN_ID=$GITHUB_RUN_ID ## Make this variable depending CI/CD provider
