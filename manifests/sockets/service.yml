@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: $REPO
+  labels:
+    name: $REPO
+spec:
+  ports:
+    - port: 443
+      targetPort: $SOCKETS_PORT
+      protocol: TCP
+      name: https
+    - port: 80
+      targetPort: $SOCKETS_PORT
+      protocol: TCP
+      name: http
+  selector:
+    name: $REPO

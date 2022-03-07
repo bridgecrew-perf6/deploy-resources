@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: $REPO
+  annotations:
+    kubernetes.io/ingress.class: $INGRESS_CLASS
+    nginx.org/websocket-services: $REPO
+    nginx.ingress.kubernetes.io/proxy-read-timeout: 7200
+    nginx.ingress.kubernetes.io/proxy-send-timeout: 7200
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$arg_token"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /$REPO(/|$)(.*)
+        backend:
+          serviceName: $REPO
+          servicePort: $SOCKETS_PORT
+      - path: /
+        backend:
+          serviceName: $REPO
+          servicePort: $SOCKETS_PORT

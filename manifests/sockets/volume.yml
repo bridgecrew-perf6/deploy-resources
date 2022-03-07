@@ -1,0 +1,4 @@
+volumes:
+  - name: $volume_name
+    persistentVolumeClaim:
+      claimName: $pvc_claim_name
