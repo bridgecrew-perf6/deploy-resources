@@ -10,6 +10,10 @@ git clone --single-branch --branch master https://github.com/nicolasdonoso/templ
 
 export AWS_DEFAULT_REGION=$AWS_REGION
 export RUN_ID=$GITHUB_RUN_ID ## Make this variable depending CI/CD provider
+
+export DOCKER_PORT=`cat Dockerfile | grep EXPOSE | cut -d ' ' -f 2`
+if [ -z "$DOCKER_PORT" ]; then export PORT=8888; else export PORT=$DOCKER_PORT; fi
+
 if [[ -z $ECR_REPO ]]
     then echo "ECR repo name defined by repo name"
     export REPO_NAME=$(echo $GITHUB_REPOSITORY|cut -d '/' -f2)
@@ -60,8 +64,22 @@ else
   envsubst < templates/manifests/sockets/service.yml > service.yml
 fi
 # cat deployment.yml
-# cat service.yml
-# cat ingress.yml
 kubectl apply -f deployment.yml -n $CI_JOB_STAGE
-kubectl apply -f service.yml -n $CI_JOB_STAGE
-kubectl apply -f ingress.yml -n $CI_JOB_STAGE
+# cat service.yml
+if [ -f deploy/service.yml ]
+  then echo "local service files"
+  envsubst < deploy/service.yml > deployment.yml
+  envsubst < deploy/service.yml > service.yml
+else
+  envsubst < templates/manifests/service.yml > service.yml
+  if [ ! -z "$DOCKER_PORT" ]; then kubectl apply -f service.yml -n $CI_JOB_STAGE; else echo 'no service'; fi
+fi
+# cat ingress.yml
+if [ -f deploy/ingress.yml ]
+  then echo "local ingress files"
+  envsubst < deploy/ingress.yml > deployment.yml
+  envsubst < deploy/ingress.yml > ingress.yml
+else
+  envsubst < templates/deploy/eng/ingress.yml > ingress.yml
+  if [ ! -z "$DOCKER_PORT" ]; then kubectl apply -f ingress.yml -n $CI_JOB_STAGE; else echo 'no ingress'; fi
+fi
