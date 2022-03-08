@@ -1,8 +1,12 @@
-name: 'Config Handler'
-description: 'Parses values from a config file (json)'
-
+name: 'Deploy'
+description: 'Deploy resources to K8s'
+inputs:
+  deployment-name:  # id of input
+    description: 'Deployment name'
+    required: true
+outputs:
+  time: # id of output
+    description: 'The time deployment was released'
 runs:
   using: 'docker'
   image: 'Dockerfile'
-  # args:
-  #   - ${{ inputs.image-name }}
