@@ -11,8 +11,8 @@ git clone --single-branch --branch master https://github.com/nicolasdonoso/templ
 export AWS_DEFAULT_REGION=$AWS_REGION
 export RUN_ID=$GITHUB_RUN_ID ## Make this variable depending CI/CD provider
 
-export DOCKER_PORT=`cat Dockerfile | grep EXPOSE | cut -d ' ' -f 2`
-if [ -z "$DOCKER_PORT" ]; then export PORT=8888; else export PORT=$DOCKER_PORT; fi
+export CONTAINER_PORT=`cat Dockerfile | grep EXPOSE | cut -d ' ' -f 2`
+if [[ $CONTAINER_PORT == "" ]]; then export CONTAINER_PORT=8888 ; fi
 
 if [[ -z $ECR_REPO ]]
     then echo "ECR repo name defined by repo name"
@@ -24,6 +24,7 @@ fi
 
 echo $K8S_KUBECONFIG | base64 -d > ./kube_config
 kubectl config use-context $K8S_CLUSTER
+
 if [[ -f deploy/secrets.yml ]]
   then echo "adding secrets"
   envsubst < deploy/secrets.yml > secrets.yml
@@ -63,23 +64,34 @@ else
   envsubst < templates/manifests/sockets/deployment.yml > deployment.yml
   envsubst < templates/manifests/sockets/service.yml > service.yml
 fi
-# cat deployment.yml
-kubectl apply -f deployment.yml -n $CI_JOB_STAGE
-# cat service.yml
+
+## DEPLOYMENT 
+if [ -f deploy/deployment.yml ]
+  then echo "local deployment files"
+  envsubst < deploy/deployment.yml > deployment.yml
+  kubectl apply -f deployment.yml -n $CI_JOB_STAGE
+elif [[ $kind == "cron" ]]
+  then echo "deploying cron"
+  envsubst < templates/crons/cron.yml > cron.yml
+  # cat cron.yml
+  kubectl delete -f cron.yml -n $CI_JOB_STAGE || true;
+  kubectl apply -f cron.yml -n $CI_JOB_STAGE
+else
+  # cat deployment.yml
+  kubectl apply -f deployment.yml -n $CI_JOB_STAGE
+fi
+
+## SERVICE/INGRESS
 if [ -f deploy/service.yml ]
   then echo "local service files"
-  envsubst < deploy/service.yml > deployment.yml
   envsubst < deploy/service.yml > service.yml
 else
-  envsubst < templates/manifests/service.yml > service.yml
   if [ ! -z "$DOCKER_PORT" ]; then kubectl apply -f service.yml -n $CI_JOB_STAGE; else echo 'no service'; fi
 fi
 # cat ingress.yml
 if [ -f deploy/ingress.yml ]
   then echo "local ingress files"
-  envsubst < deploy/ingress.yml > deployment.yml
   envsubst < deploy/ingress.yml > ingress.yml
 else
-  envsubst < templates/deploy/eng/ingress.yml > ingress.yml
   if [ ! -z "$DOCKER_PORT" ]; then kubectl apply -f ingress.yml -n $CI_JOB_STAGE; else echo 'no ingress'; fi
 fi
