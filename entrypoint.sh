@@ -64,13 +64,16 @@ if [[ $SERVICE == 'true' ]];
   fi
   if [[ -f deploy/deployment.yml ]]
     then echo "local files"
+    envsubst < deploy/deployment.yml > deployment.yml
+    envsubst < deploy/ingress.yml > ingress.yml
+    envsubst < deploy/service.yml > service.yml
   else
     echo "template files"
     envsubst < templates/manifests/global/deployment.yml > deployment.yml
     envsubst < templates/manifests/services/ingress.yml > ingress.yml
     envsubst < templates/manifests/global/service.yml > service.yml
   fi
-elif [[ $SOCKET_SERVICE == 'true' ]];
+elif [[ ! -z $INGRESS_CLASS ]];
   then echo "deploying sockets resources"
   if [[ -f deploy/deployment.yml ]]
     then echo "local files"
@@ -86,6 +89,10 @@ elif [[ $SOCKET_SERVICE == 'true' ]];
 else
   echo "deploying other"
   envsubst < templates/manifests/sockets/deployment.yml > deployment.yml
+  if [[ -f deploy/deployment.yml ]]
+    then echo "local files"
+    envsubst < deploy/deployment.yml > deployment.yml
+  fi
 fi
 
 cat deployment.yml
