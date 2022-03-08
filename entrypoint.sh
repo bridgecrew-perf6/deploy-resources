@@ -73,6 +73,8 @@ if [[ $SERVICE == 'true' ]];
     envsubst < templates/manifests/services/ingress.yml > ingress.yml
     envsubst < templates/manifests/global/service.yml > service.yml
   fi
+  kubectl apply -f ingress.yml
+  kubectl apply -f service.yml
 elif [[ ! -z $INGRESS_CLASS ]];
   then echo "deploying sockets resources"
   if [[ -f deploy/deployment.yml ]]
@@ -86,6 +88,8 @@ elif [[ ! -z $INGRESS_CLASS ]];
     envsubst < templates/manifests/sockets/ingress.yml > ingress.yml
     envsubst < templates/manifests/global/service.yml > service.yml
   fi
+  kubectl apply -f ingress.yml
+  kubectl apply -f service.yml
 else
   echo "deploying other"
   envsubst < templates/manifests/sockets/deployment.yml > deployment.yml
@@ -95,6 +99,4 @@ else
   fi
 fi
 
-cat deployment.yml
-cat ingress.yml
-cat service.yml
+kubectl apply -f deployment.yml
