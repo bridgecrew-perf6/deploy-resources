@@ -22,8 +22,8 @@ else
     export REPO_NAME=$ECR_REPO
 fi
 
-# echo $K8S_KUBECONFIG | base64 -d > ./kube_config
-# # kubectl config use-context $K8S_CLUSTER
+echo $K8S_KUBECONFIG | base64 -d > ./kube_config
+kubectl config use-context $K8S_CLUSTER
 
 if [[ -f deploy/secrets.yml ]]
   then echo "adding secrets"
@@ -92,7 +92,7 @@ elif [[ ! -z $INGRESS_CLASS ]];
   kubectl apply -f service.yml
 else
   echo "deploying other"
-  envsubst < templates/manifests/sockets/deployment.yml > deployment.yml
+  envsubst < templates/manifests/global/deployment.yml > deployment.yml
   if [[ -f deploy/deployment.yml ]]
     then echo "local files"
     envsubst < deploy/deployment.yml > deployment.yml
