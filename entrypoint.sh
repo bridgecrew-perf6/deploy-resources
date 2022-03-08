@@ -1,8 +1,5 @@
 #!/bin/sh
 
-export AWS_DEFAULT_REGION=$AWS_REGION
-export RUN_ID=$GITHUB_RUN_ID ## Make this variable depending CI/CD provider
-
 ## TODO: Check before script
 ## Clone templates
 
