@@ -52,8 +52,8 @@ if [[ $kind == "cron" ]]
   then echo "deploying cron"
   envsubst < templates/crons/cron.yml > cron.yml
   # cat cron.yml
-  kubectl delete -f cron.yml -n $CI_JOB_STAGE || true;
-  kubectl apply -f cron.yml -n $CI_JOB_STAGE
+  kubectl delete -f cron.yml -n $NAMESPACE || true;
+  kubectl apply -f cron.yml -n $NAMESPACE
   break;
 fi
 if [[ $SERVICE == 'true' ]];
@@ -73,8 +73,8 @@ if [[ $SERVICE == 'true' ]];
     envsubst < templates/manifests/services/ingress.yml > ingress.yml
     envsubst < templates/manifests/global/service.yml > service.yml
   fi
-  kubectl apply -f ingress.yml
-  kubectl apply -f service.yml
+  kubectl apply -f ingress.yml -n $NAMESPACE
+  kubectl apply -f service.yml -n $NAMESPACE
 elif [[ ! -z $INGRESS_CLASS ]];
   then echo "deploying sockets resources"
   if [[ -f deploy/deployment.yml ]]
@@ -88,8 +88,8 @@ elif [[ ! -z $INGRESS_CLASS ]];
     envsubst < templates/manifests/sockets/ingress.yml > ingress.yml
     envsubst < templates/manifests/global/service.yml > service.yml
   fi
-  kubectl apply -f ingress.yml
-  kubectl apply -f service.yml
+  kubectl apply -f ingress.yml -n $NAMESPACE
+  kubectl apply -f service.yml -n $NAMESPACE
 else
   echo "deploying other"
   envsubst < templates/manifests/global/deployment.yml > deployment.yml
@@ -99,4 +99,4 @@ else
   fi
 fi
 
-kubectl apply -f deployment.yml
+kubectl apply -f deployment.yml -n $NAMESPACE
